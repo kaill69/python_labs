@@ -27,4 +27,4 @@ nubmer_2 = float(input('введите 2-ое число: ').replace(',', '.'))
 print(f'sum={nubmer_2 + nubmer_1:.2f};', f'avg={(nubmer_2+nubmer_1)/2:.2f}')
 ```
 
-# [Результат задания №2](images/lab1/task№2.png)
+# ![Результат задания №2](images/lab1/task№2.png)
