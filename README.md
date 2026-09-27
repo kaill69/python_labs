@@ -48,4 +48,4 @@ print(f'НДС:               {vat_amount:.2f} ₽')
 print(f'Итого к оплате:    {total:.2f} ₽')
 ```
 
-# !(images/lab1/task№3.png)
+# ![Результат задания 3](images/lab1/task№3.png)
