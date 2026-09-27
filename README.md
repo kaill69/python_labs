@@ -28,3 +28,24 @@ print(f'sum={nubmer_2 + nubmer_1:.2f};', f'avg={(nubmer_2+nubmer_1)/2:.2f}')
 ```
 
 # ![Результат задания №2](images/lab1/task№2.png)
+
+## Задание 3.
+
+Вводятся: цена, скидка, ндс
+Выводятся значения: общее после скидки, ндс, итоговая сумма после скидки + ндс
+
+```python
+price = float(input('цена: '))
+discount = float(input('скидка(%): '))
+vat = float(input('НДС(%): '))
+
+base = price * (1 - discount / 100) # цена со скидкой
+vat_amount = base * (vat / 100) # ндс
+total = base + vat_amount # цена + ндс
+
+print(f'База после скидки: {base:.2f} ₽')
+print(f'НДС:               {vat_amount:.2f} ₽')
+print(f'Итого к оплате:    {total:.2f} ₽')
+```
+
+# !(images/lab1/task№3.png)
