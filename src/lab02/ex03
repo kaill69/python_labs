@@ -1,0 +1,29 @@
+def format_record(rec: tuple[str, str, float]):
+    info = ''
+    if len(rec[1]) == 0:
+        raise ValueError('Неправильный ввод группы')
+    if type(rec) != tuple:
+        raise TypeError('Нужен тип tuple')
+    if len(rec) != 3:
+        raise ValueError('Введите: ФИО, Группу, GPA')
+    fio = rec[0].split()
+    if len(fio) == 3:
+        fio1 = fio[0][0].upper() + fio[0][1:]
+        fio2 = fio[1][0].upper() 
+        fio3 = fio[2][0].upper()
+        fio = fio1 + ' ' + fio2 + '.' + fio3 + '.'
+    elif len(fio) == 2:
+        fio1 = fio[0][0].upper() + fio[0][1:]
+        fio2 = fio[1][0].upper()
+        fio = fio1 + ' ' + fio2 + '.'
+    else:
+        raise ValueError('Неправильный ввод ФИО')
+    if type(rec[2]) == float and 0 <= rec[2] <= 5:
+        info = str(f'{fio}, гр. {rec[1]}, GPA {rec[2]:.2f}')
+    else:
+        raise TypeError('Неправильнаый ввод GPA')
+    return info
+print(format_record(("Иванов Иван Иванович", "BIVT-25", 4.6)))
+print(format_record(("Петров Пётр", "IKBO-12", 5.0)))
+print(format_record(("Петров Пётр Петрович", "IKBO-12", 5.0)))
+print(format_record(("  сидорова  анна   сергеевна ", "ABB-01", 3.999)))

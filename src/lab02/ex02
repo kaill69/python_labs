@@ -1,0 +1,67 @@
+# def transpose(mat: list[list[float | int]]):
+#     if mat == []:
+#         return []
+#     for i in range(len(mat)-1):
+#         if len(mat[i]) != len(mat[i+1]):
+#             raise ValueError ('матрица рваная')
+
+#     stolb = len(mat[0])
+#     matr = [[] for i in range(stolb)]
+#     for i in range(len(mat)):
+#         c = 0
+#         for j in range(len(mat[i])):
+#             for l in range(stolb):
+#                 matr[l + c].append(mat[i][j])
+#                 c += 1
+#                 break
+#     return matr
+# print(transpose([[1, 2, 3]]))
+# print(transpose([[1], [2], [3]]))
+# print(transpose([[1, 2], [3, 4]]))
+# print(transpose([]))
+# print(transpose([[1, 2], [3]]))
+
+# def row_sums(mat: list[list[float | int]]):
+#     for i in range(len(mat)-1):
+#         if len(mat[i]) != len(mat[i+1]):
+#             raise ValueError ('Матрица рваная')
+
+#     summ = []
+#     for i in range(len(mat)):
+#         c = 0
+#         for j in range(len(mat[i])):
+#             c += mat[i][j]
+#         summ.append(c)
+#     return summ
+# print(row_sums([[1, 2, 3], [4, 5, 6]]))
+# print(row_sums([[-1, 1], [10, -10]]))
+# print(row_sums([[0, 0], [0, 0]]))
+# print(row_sums([[1, 2], [3]]))
+
+def col_sums(mat: list[list[float | int]]):
+    if not mat:
+        return []
+    
+    for i in range(len(mat)-1):
+            if len(mat[i]) != len(mat[i+1]):
+                raise ValueError ('Матрица рваная')
+
+    stolb = len(mat[0])
+    summ = []
+    matr = [[] for i in range(stolb)]
+    for i in range(len(mat)):
+        c = 0
+        for j in range(len(mat[i])):
+            for l in range(stolb):
+                matr[l + c].append(mat[i][j])
+                c += 1
+                break
+
+    for i in range(len(matr)):
+         summ.append(sum(matr[i]))
+    return summ
+
+print(col_sums([[1, 2, 3], [4, 5, 6]]))
+print(col_sums([[-1, 1], [10, -10]]))
+print(col_sums([[0, 0], [0, 0]]))
+print(col_sums([[1, 2], [3]]))
