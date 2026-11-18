@@ -10,12 +10,15 @@ def cmd_cat(input_path: str, number_lines: bool) -> None:
         raise FileNotFoundError(f"Файл не найден: {input_path}")
 
     with open(path, "r", encoding="utf-8") as f:
-        for lineno, line in enumerate(f, start=1):
+        lineno = 1
+        for line in f:
             clean_line = line.rstrip("\n")
             if number_lines:
                 print(f"{lineno}: {clean_line}")
             else:
                 print(clean_line)
+            lineno += 1
+
 
 
 def cmd_stats(input_path: str, top: int) -> None:

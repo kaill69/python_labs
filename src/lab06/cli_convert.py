@@ -32,9 +32,11 @@ def main() -> None:
     if args.cmd == "json2csv":
         json_to_csv(str(in_path), str(out_path))
         print(f"Успешно: {in_path} -> {out_path}")
+
     elif args.cmd == "csv2json":
         csv_to_json(str(in_path), str(out_path))
         print(f"Успешно: {in_path} -> {out_path}")
+        
     elif args.cmd == "csv2xlsx":
         csv_to_xlsx(str(in_path), str(out_path))
         print(f"Успешно: {in_path} -> {out_path}")
