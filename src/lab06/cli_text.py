@@ -42,12 +42,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="CLI-утилита для работы с текстом (cat и stats)")
     subparsers = parser.add_subparsers(dest="command", required=True, help="Доступные подкоманды")
 
-    # Подкоманда cat
+
     cat_parser = subparsers.add_parser("cat", help="Вывести содержимое файла построчно")
     cat_parser.add_argument("--input", required=True, help="Путь к входному файлу")
     cat_parser.add_argument("-n", action="store_true", help="Нумеровать выводимые строки")
 
-    # Подкоманда stats
+
     stats_parser = subparsers.add_parser("stats", help="Посчитать статистику и частоты слов")
     stats_parser.add_argument("--input", required=True, help="Путь к текстовому файлу")
     stats_parser.add_argument("--top", type=int, default=5, help="Количество самых частых слов (по умолчанию: 5)")

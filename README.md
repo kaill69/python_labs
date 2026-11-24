@@ -1,210 +1,171 @@
-# Лабораторная работа №5 — Конвертация данных (JSON, CSV, XLSX)
+# ЛР6 - CLI‑утилиты с argparse (cat/grep‑lite + конвертеры): Техническое задание
 
-## Цель работы
-Изучить работу с табличными и структурированными форматами данных в Python (`json`, `csv`, `openpyxl`), реализовать функции взаимной конвертации `JSON ↔ CSV` и экспорта `CSV → XLSX` с проверкой корректности входных данных и настройкой форматирования таблиц Excel.
+## Цель: Научиться создавать консольные инструменты с аргументами командной строки, подкомандами и флагами.
 
-## Задание A — JSON ↔ CSV
-### Преобразует JSON-файл в CSV
-неверный тип файла, пустой JSON или CSV → ValueError.
-осутствующий файл → FileNotFoundError
+### Задание 1 - CLI-утилита для текста (`src/lab06/cli_text.py`)
 
-```Python
-import json
-import csv
-import os 
-
-def json_to_csv(json_path: str, csv_path: str) -> None:
-    """
-    Преобразует JSON-файл в CSV.
-    Поддерживает список словарей [{...}, {...}], заполняет отсутствующие поля пустыми строками.
-    Кодировка UTF-8.
-    """
-    if not os.path.exists(json_path):
-        raise FileNotFoundError(f"Файл не найден: {json_path}")
-
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Битый JSON: {e}")
-
-    if not data:
-        raise ValueError("JSON пустой")
-
-    if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
-        raise ValueError('Ожидается список словарей в JSON')
-
-    fieldnames = list(data[0].keys())
-
-    with open(csv_path, 'w', encoding='utf-8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(data)
-```
-
-
-### Преобразует файл JSON в CSV
-неверный тип файла, пустой JSON или CSV → ValueError.
-осутствующий файл → FileNotFoundError
-```python
-def csv_to_json(csv_path: str, json_path: str) -> None:
-    """
-    Преобразует CSV в JSON (список словарей).
-    Заголовок обязателен, значения сохраняются как строки.
-    json.dump(..., ensure_ascii=False, indent=2)
-    """
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f'Файл не найден: {csv_path}')
-
-    data = []
-    with open(csv_path, 'r', encoding='utf-8', newline='') as f:
-        reader = csv.DictReader(f)
-        if not reader.fieldnames:
-            raise ValueError("CSV пустой или отсутствует заголовок")
-
-        for row in reader:
-            data.append(row)
-
-        if not data:
-            raise ValueError("CSV пустой")
-
-        with open(json_path, 'w', encoding='utf-8', newline='') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-if __name__ == "__main__":
-    json_to_csv("data/samples/people.json", "data/out/people_from_json.csv")
-    csv_to_json("data/samples/people.csv", "data/out/people_from_csv.json")
-```
-## Тест кейсы для - А
-JSON -> CSV
-
-Input
-``` JSON
-[
-  {
-    "name": "Иванов Иван",
-    "age": "20",
-    "city": "Москва"
-  },
-  {
-    "name": "Петров Петр",
-    "age": "22",
-    "city": "Санкт-Петербург"
-  },
-  {
-    "name": "Сидорова Анна",
-    "age": "19",
-    "city": "Казань"
-  }
-]
-```
-
-Output
-```CSV
-name,age,city
-Иванов Иван,20,Москва
-Петров Петр,22,Санкт-Петербург
-Сидорова Анна,19,Казань
-```
-
-CSV -> JSON
-Input
-```CSV
-name,age,city
-Иванов Иван,20,Москва
-Петров Петр,22,Санкт-Петербург
-Сидорова Анна,19,Казань
-``` 
-
-Output
-``` JSON
-[
-  {
-    "name": "Иванов Иван",
-    "age": "20",
-    "city": "Москва"
-  },
-  {
-    "name": "Петров Петр",
-    "age": "22",
-    "city": "Санкт-Петербург"
-  },
-  {
-    "name": "Сидорова Анна",
-    "age": "19",
-    "city": "Казань"
-  }
-]
-``` 
-
-# ![Результат задания №1](images/lab5/image.png)
-# ![Результат задания №1](images/lab5/test2.png)
-
-## Задание B — CSV → XLSX
-
-### Конвертирует CSV в XLSX, использует openpyxl
-Проверка ошибок:
-    неверный тип файла, пустой JSON или CSV → ValueError.
-    осутствующий файл → FileNotFoundError
+ Выводит содержимое файла построчно (с нумерацией при флаге -n)
 
 ```python
-import csv
-import os
-from openpyxl import Workbook
+import argparse
+from pathlib import Path
 
-def csv_to_xlsx(csv_path: str, xlsx_path: str) -> None:
-    """
-    Конвертирует CSV в XLSX.
-    Первая строка CSV — заголовок.
-    Лист называется "Sheet1".
-    Колонки — автоширина по длине текста (не менее 8 символов).
-    """
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"Файл не найден: {csv_path}")
+def cmd_cat(input_path: str, number_lines: bool) -> None:
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Sheet1"
+    path = Path(input_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Файл не найден: {input_path}")
 
-    with open(csv_path, 'r', encoding='utf-8', newline='') as f:
-        reader = csv.reader(f)
-        data = list(reader)
+    with open(path, "r", encoding="utf-8") as f:
+        lineno = 1
+        for line in f:
+            clean_line = line.rstrip("\n")
+            if number_lines:
+                print(f"{lineno}: {clean_line}")
+            else:
+                print(clean_line)
+            lineno += 1
+```
 
-    if not data:
-        raise ValueError("CSV пустой")
+Анализирует частоты слов в тексте и выводит топ-N
 
-    for row in data:
-        ws.append(row)
+```python
+def cmd_stats(input_path: str, top: int) -> None:
 
-    for col in ws.columns:
-        max_length = 0
-        column_letter = col[0].column_letter
+    path = Path(input_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Файл не найден: {input_path}")
 
-        for cell in col:
-            if cell.value:
-                length = len(str(cell.value))
-                if length > max_length:
-                    max_length = length
-        ws.column_dimensions[column_letter].width = max(max_length + 2, 8)
+    text = path.read_text(encoding="utf-8")
+    tokens = tokenize(normalize(text))
+    freqs = count_freq(tokens)
 
-    os.makedirs(os.path.dirname(xlsx_path), exist_ok=True)
-    wb.save(xlsx_path)
+    print(f"Всего слов: {len(tokens)}")
+    print(f"Уникальных слов: {len(freqs)}")
+    print(f"Топ-{top} слов:")
+    for word, count in top_n(freqs, top):
+        print(f"{word}: {count}")
+```
+
+```python
+def main() -> None:
+    parser = argparse.ArgumentParser(description="CLI-утилита для работы с текстом (cat и stats)")
+    subparsers = parser.add_subparsers(dest="command", required=True, help="Доступные подкоманды")
+
+
+    cat_parser = subparsers.add_parser("cat", help="Вывести содержимое файла построчно")
+    cat_parser.add_argument("--input", required=True, help="Путь к входному файлу")
+    cat_parser.add_argument("-n", action="store_true", help="Нумеровать выводимые строки")
+
+
+    stats_parser = subparsers.add_parser("stats", help="Посчитать статистику и частоты слов")
+    stats_parser.add_argument("--input", required=True, help="Путь к текстовому файлу")
+    stats_parser.add_argument("--top", type=int, default=5, help="Количество самых частых слов (по умолчанию: 5)")
+    args = parser.parse_args()
+
+    if args.command == "cat":
+        cmd_cat(args.input, args.n)
+    elif args.command == "stats":
+        if args.top <= 0:
+            parser.error("Параметр --top должен быть положительным целым числом")
+        cmd_stats(args.input, args.top)
+```
+
+cat --input data/samples/people.csv -n
+# ![Результат задания №1](images/lab6/test1.png)
+
+stats --input data/samples/people.txt --top 5
+# ![Результат задания №1](images/lab6/test2.png)
+
+
+### Задание 2 - cli_convert - консольный конвертер форматов
+
+Переиспользует функции json_to_csv, csv_to_json и csv_to_xlsx из пакета src.lab05 и оборачивает их в три подкоманды
+
+```python
+import argparse
+from pathlib import Path
+from src.lab05.json_csv import json_to_csv, csv_to_json
+from src.lab05.csv_xlsx import csv_to_xlsx
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="CLI-конвертер табличных и структурированных данных (JSON, CSV, XLSX)")
+    sub = parser.add_subparsers(dest="cmd", required=True, help="Режим конвертации")
+
+    p1 = sub.add_parser("json2csv", help="Конвертировать JSON в CSV")
+    p1.add_argument("--in", dest="input", required=True, help="Путь к входному JSON-файлу")
+    p1.add_argument("--out", dest="output", required=True, help="Путь к выходному CSV-файлу")
+
+    p2 = sub.add_parser("csv2json", help="Конвертировать CSV в JSON")
+    p2.add_argument("--in", dest="input", required=True, help="Путь к входному CSV-файлу")
+    p2.add_argument("--out", dest="output", required=True, help="Путь к выходному JSON-файлу")
+
+    p3 = sub.add_parser("csv2xlsx", help="Конвертировать CSV в XLSX")
+    p3.add_argument("--in", dest="input", required=True, help="Путь к входному CSV-файлу")
+    p3.add_argument("--out", dest="output", required=True, help="Путь к выходному XLSX-файлу")
+
+    args = parser.parse_args()
+
+    in_path = Path(args.input)
+    if not in_path.is_file():
+        raise FileNotFoundError(f"Файл не найден: {args.input}")
+
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if args.cmd == "json2csv":
+        json_to_csv(str(in_path), str(out_path))
+        print(f"Успешно: {in_path} -> {out_path}")
+
+    elif args.cmd == "csv2json":
+        csv_to_json(str(in_path), str(out_path))
+        print(f"Успешно: {in_path} -> {out_path}")
+        
+    elif args.cmd == "csv2xlsx":
+        csv_to_xlsx(str(in_path), str(out_path))
+        print(f"Успешно: {in_path} -> {out_path}")
+
 
 if __name__ == "__main__":
-    csv_path = "data/samples/people.csv"
-    out_dir = "data/out"
-    csv_to_xlsx(csv_path, f"{out_dir}/people.xlsx")
-``` 
+    main()
+```
 
-Test-Case
+### JSON в CSV
+in:
+# ![Результат задания №1](images/lab6/in_json.png)
 
-input
-``` CSV
-name,age,city
-Иванов Иван,20,Москва
-Петров Петр,22,Санкт-Петербург
-Сидорова Анна,19,Казань
-``` 
+out:
+# ![Результат задания №1](images/lab6/out_csv.png)
 
-output
-# ![Результат задания №1](images/lab5/exel.png)
+
+### CSV в JSON
+in:
+# ![Результат задания №1](images/lab6/in_csv.png)
+
+out:
+# ![Результат задания №1](images/lab6/in_json.png)
+
+
+### CSV XLSX
+in:
+# ![Результат задания №1](images/lab6/in_csv.png)
+
+out:
+# ![Результат задания №1](images/lab6/out_xlsx.png)
+
+
+python3 -m src.lab06.cli_text cat --help
+# ![Результат задания №1](images/lab6/cat_help.png)
+
+python3 -m src.lab06.cli_text stats --help
+# ![Результат задания №1](images/lab6/cat_help.png)
+
+python3 -m src.lab06.cli_convert json2csv --help
+# ![Результат задания №1](images/lab6/json2csv.png)
+
+python3 -m src.lab06.cli_convert csv2json --help
+# ![Результат задания №1](images/lab6/csv2json.png)
+
+python3 -m src.lab06.cli_convert csv2xlsx --help
+# ![Результат задания №1](images/lab6/csv2xlsx.png)
